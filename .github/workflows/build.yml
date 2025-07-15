@@ -1,4 +1,4 @@
-name: Build Executable
+name: Build APK
 
 on:
   push:
@@ -7,30 +7,44 @@ on:
 
 jobs:
   build:
-    strategy:
-      matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-    
-    runs-on: ${{ matrix.os }}
-    
+    runs-on: ubuntu-latest
+
     steps:
-    - uses: actions/checkout@v4
-    
+    - name: Checkout
+      uses: actions/checkout@v4
+
     - name: Setup Python
       uses: actions/setup-python@v4
       with:
         python-version: '3.9'
-        
-    - name: Install dependencies
+
+    - name: Setup Java
+      uses: actions/setup-java@v3
+      with:
+        distribution: 'temurin'
+        java-version: '17'
+
+    - name: Setup Android SDK
+      uses: android-actions/setup-android@v3
+
+    - name: Install Buildozer
       run: |
-        pip install kivy pyinstaller
-        
-    - name: Build executable
+        pip install buildozer
+        pip install cython
+
+    - name: Create buildozer.spec
       run: |
-        pyinstaller --onefile --windowed main.py
-        
-    - name: Upload executable
+        buildozer init
+        sed -i 's/title = My Application/title = Cable Color Converter/' buildozer.spec
+        sed -i 's/package.name = myapp/package.name = cablecolorconverter/' buildozer.spec
+        sed -i 's/package.domain = org.example/package.domain = org.example/' buildozer.spec
+
+    - name: Build APK
+      run: |
+        yes | buildozer android debug
+
+    - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
-        name: executable-${{ matrix.os }}
-        path: dist/*
+        name: apk
+        path: bin/*.apk
