@@ -22,12 +22,6 @@ version = 0.1
 # comma separated e.g. requirements = sqlite3,kivy
 requirements = python3,kivy
 
-# (str) Presplash of the application
-#presplash.filename = %(source.dir)s/data/presplash.png
-
-# (str) Icon of the application
-#icon.filename = %(source.dir)s/data/icon.png
-
 # (str) Supported orientation (landscape, sensorLandscape, portrait or all)
 orientation = portrait
 
@@ -45,30 +39,16 @@ warn_on_root = 1
 [android]
 
 # (int) Target Android API, should be as high as possible.
-api = 33
+api = 31
 
 # (int) Minimum API your APK / AAB will support.
 minapi = 21
 
-# (str) Android NDK version to use
-ndk = 25b
+# (str) Android NDK version to use (match what's available)
+ndk = 27.2.12479018
 
 # (bool) Use --private data storage (True) or --dir public storage (False)
 private_storage = True
-
-# (str) Android NDK directory (if empty, it will be automatically downloaded.)
-#ndk_path =
-
-# (str) Android SDK directory (if empty, it will be automatically downloaded.)
-#sdk_path =
-
-# (str) ANT directory (if empty, it will be automatically downloaded.)
-#ant_path =
-
-# (bool) If True, then skip trying to update the Android sdk
-# This can be useful to avoid excess Internet downloads or save time
-# when an update is due and you just want to test/build your package
-# android.skip_update = False
 
 # (bool) If True, then automatically accept SDK license
 # agreements. This is intended for automation only. If set to False,
@@ -77,8 +57,24 @@ private_storage = True
 accept_sdk_license = True
 
 # (str) The Android arch to build for, choices: armeabi-v7a, arm64-v8a, x86, x86_64
-# In past, was `android.arch` as we weren't supporting builds for multiple archs at the same time.
-archs = arm64-v8a, armeabi-v7a
+# Build for single arch to avoid conflicts
+archs = arm64-v8a
+
+# (str) python-for-android branch to use
+p4a.branch = master
+
+# (str) python-for-android git clone directory
+#p4a.source_dir =
+
+# (str) The directory in which python-for-android should look for your own build recipes (if any)
+#p4a.local_recipes =
+
+# (str) Filename to the hook for p4a
+#p4a.hook =
+
+# (str) Bootstrap to use for android builds
+# Run `buildozer android list` to see available bootstraps.
+bootstrap = sdl2
 
 [buildozer:global]
 
