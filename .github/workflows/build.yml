@@ -32,13 +32,6 @@ jobs:
         pip install buildozer
         pip install cython
 
-    - name: Create buildozer.spec
-      run: |
-        buildozer init
-        sed -i 's/title = My Application/title = Cable Color Converter/' buildozer.spec
-        sed -i 's/package.name = myapp/package.name = cablecolorconverter/' buildozer.spec
-        sed -i 's/package.domain = org.example/package.domain = org.example/' buildozer.spec
-
     - name: Build APK
       run: |
         yes | buildozer android debug
