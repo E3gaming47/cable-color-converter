@@ -3,8 +3,6 @@ name: Build Android APK
 on:
   push:
     branches: [ main, master ]
-  pull_request:
-    branches: [ main, master ]
   workflow_dispatch:
 
 jobs:
@@ -14,49 +12,6 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.9'
-
-    - name: Set up JDK 17
-      uses: actions/setup-java@v3
-      with:
-        java-version: '17'
-        distribution: 'temurin'
-
-    - name: Setup Android SDK
-      uses: android-actions/setup-android@v3
-
-    - name: Accept Android SDK licenses
-      run: |
-        yes | sdkmanager --licenses
-        sdkmanager "platform-tools" "platforms;android-33" "build-tools;33.0.2"
-
-    - name: Install system dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y \
-          build-essential \
-          git \
-          python3 \
-          python3-dev \
-          ffmpeg \
-          libsdl2-dev \
-          libsdl2-image-dev \
-          libsdl2-mixer-dev \
-          libsdl2-ttf-dev \
-          libportmidi-dev \
-          libswscale-dev \
-          libavformat-dev \
-          libavcodec-dev \
-          zlib1g-dev
-
-    - name: Install Python dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install buildozer cython
 
     - name: Create buildozer.spec
       run: |
@@ -69,8 +24,6 @@ jobs:
         source.include_exts = py,png,jpg,kv,atlas
         version = 0.1
         requirements = python3,kivy
-        presplash.filename = %(source.dir)s/data/presplash.png
-        icon.filename = %(source.dir)s/data/icon.png
 
         [buildozer]
         log_level = 2
@@ -79,44 +32,14 @@ jobs:
         api = 33
         minapi = 21
         ndk = 25b
-        sdk = 33
         accept_sdk_license = True
-        gradle_dependencies = 
-
-        [android.gradle_dependencies]
-
-        [android.permissions]
-        INTERNET = 1
-        WRITE_EXTERNAL_STORAGE = 1
-        READ_EXTERNAL_STORAGE = 1
         EOF
 
-    - name: Create placeholder assets
+    - name: Build APK with Buildozer Docker
       run: |
-        mkdir -p data
-        # Create a simple 512x512 icon (transparent PNG)
-        python3 -c "
-        from PIL import Image, ImageDraw
-        img = Image.new('RGBA', (512, 512), (0, 100, 200, 255))
-        draw = ImageDraw.Draw(img)
-        draw.text((200, 250), 'CC', fill='white')
-        img.save('data/icon.png')
-        img.save('data/presplash.png')
-        " || echo "PIL not available, creating dummy files"
-        
-        # Fallback: create dummy files if PIL fails
-        if [ ! -f "data/icon.png" ]; then
-          touch data/icon.png
-          touch data/presplash.png
-        fi
-
-    - name: Build with Buildozer
-      run: |
-        buildozer android debug
-      env:
-        ANDROID_ACCEPT_SDK_LICENSE: y
-        ANDROID_SDK_ROOT: ${{ env.ANDROID_SDK_ROOT }}
-        ANDROID_HOME: ${{ env.ANDROID_SDK_ROOT }}
+        docker run --rm -v "$PWD":/home/user/hostcwd \
+          kivy/buildozer:latest \
+          bash -c "cd /home/user/hostcwd && buildozer android debug"
 
     - name: Upload APK artifact
       uses: actions/upload-artifact@v4
