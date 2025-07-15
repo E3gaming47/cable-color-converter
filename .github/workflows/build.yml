@@ -1,4 +1,4 @@
-name: Build Android APK
+name: Build Executable
 
 on:
   push:
@@ -7,7 +7,11 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    
+    runs-on: ${{ matrix.os }}
     
     steps:
     - uses: actions/checkout@v4
@@ -17,16 +21,16 @@ jobs:
       with:
         python-version: '3.9'
         
-    - name: Build APK with P4A
-      uses: p4a-build/python-for-android-build@v1
-      with:
-        requirements: 'python3,kivy'
-        name: 'CableColorConverter'
-        package: 'org.example.cablecolorconverter'
-        version: '0.1'
+    - name: Install dependencies
+      run: |
+        pip install kivy pyinstaller
         
-    - name: Upload APK
+    - name: Build executable
+      run: |
+        pyinstaller --onefile --windowed main.py
+        
+    - name: Upload executable
       uses: actions/upload-artifact@v4
       with:
-        name: apk
-        path: dist/*.apk
+        name: executable-${{ matrix.os }}
+        path: dist/*
